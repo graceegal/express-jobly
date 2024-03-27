@@ -38,32 +38,67 @@ class Company {
                     description,
                     num_employees AS "numEmployees",
                     logo_url AS "logoUrl"`, [
-          handle,
-          name,
-          description,
-          numEmployees,
-          logoUrl,
-        ],
+      handle,
+      name,
+      description,
+      numEmployees,
+      logoUrl,
+    ],
     );
     const company = result.rows[0];
 
     return company;
   }
 
-  /** Find all companies.
+  /**Find companies. If not given any search filters, queries database
+   * for all companies. Else, applies conditional logic to dynamically generate
+   * a WHERE clause to retrieve filtered records from the database.
+   *
+   * Can filter on provided search filters:
+   * - minEmployees
+   * - maxEmployees
+   * - nameLike (will find case-insensitive, partial matches)
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(`
-        SELECT handle,
-               name,
-               description,
-               num_employees AS "numEmployees",
-               logo_url      AS "logoUrl"
-        FROM companies
-        ORDER BY name`);
+  // TODO: can take out WHERE logic into another helper function maybe called _generateFilterSQL
+  static async findAll({ nameLike, minEmployees, maxEmployees }) {
+    const values = [];
+    let whereSQL = "";
+
+    if (nameLike) {
+      whereSQL += `name ILIKE $${values.length + 1}`;
+      values.push(`%${nameLike}%`);
+    }
+
+    if (minEmployees) {
+      if (whereSQL) whereSQL += " AND ";
+      whereSQL += `num_employees >= $${values.length + 1}`;
+      values.push(minEmployees);
+    }
+
+    if (maxEmployees) {
+      if (whereSQL) whereSQL += " AND ";
+      whereSQL += `num_employees <= $${values.length + 1}`;
+      values.push(maxEmployees);
+    }
+
+    if (whereSQL) {
+      whereSQL = "WHERE " + whereSQL;
+    }
+
+    const querySQL = `
+      SELECT handle,
+           name,
+           description,
+           num_employees AS "numEmployees",
+           logo_url      AS "logoUrl"
+      FROM companies
+      ${whereSQL}
+      ORDER BY name`;
+
+    const companiesRes = await db.query(querySQL, values);
     return companiesRes.rows;
   }
 
@@ -106,11 +141,11 @@ class Company {
 
   static async update(handle, data) {
     const { setCols, values } = sqlForPartialUpdate(
-        data,
-        {
-          numEmployees: "num_employees",
-          logoUrl: "logo_url",
-        });
+      data,
+      {
+        numEmployees: "num_employees",
+        logoUrl: "logo_url",
+      });
     const handleVarIdx = "$" + (values.length + 1);
 
     const querySql = `

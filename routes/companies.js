@@ -28,7 +28,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyNewSchema,
-    {required: true}
+    { required: true }
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
@@ -47,11 +47,34 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * - maxEmployees
  * - nameLike (will find case-insensitive, partial matches)
  *
+ * Throws Errors if invalidFilter keywords are passed in to query string
+ * or if minEmployees > maxEmployees in search
+ *
  * Authorization required: none
  */
 
 router.get("/", async function (req, res, next) {
-  const companies = await Company.findAll();
+  // TODO: use jsonschema for validation
+  const allowedFilters = ["nameLike", "minEmployees", "maxEmployees"];
+  const keys = Object.keys(req.query);
+  const isValidFilter = keys.every(key => allowedFilters.includes(key));
+
+  if (!isValidFilter) throw new BadRequestError("Cannot filter by given criteria");
+
+  let { nameLike, minEmployees, maxEmployees } = req.query;
+
+  if (minEmployees && maxEmployees) {
+    minEmployees = Number(minEmployees);
+    maxEmployees = Number(maxEmployees);
+
+    if (minEmployees > maxEmployees) {
+      throw new BadRequestError(
+        "Cannot set minEmployees to greater than maxEmployees");
+    }
+  }
+
+  const companies =
+    await Company.findAll({ nameLike, minEmployees, maxEmployees });
   return res.json({ companies });
 });
 
@@ -83,7 +106,7 @@ router.patch("/:handle", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyUpdateSchema,
-    {required:true}
+    { required: true }
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
