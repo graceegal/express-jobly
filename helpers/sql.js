@@ -2,7 +2,17 @@
 
 const { BadRequestError } = require("../expressError");
 
-// THIS NEEDS SOME GREAT DOCUMENTATION.
+/** Generates SQL and converting Javascript camelcased keys to snake_case
+ * for use in database operations
+ *
+ * Takes in (dataToUpdate, jsToSql)
+ *    - dataToUpdate: an object with data that is being updated
+ *    - jsToSQL: object with camel-cased keys and snaked-cased equivalents as values
+ *
+ * Returns { setCols, values}
+ *    - setCols: joined SQL string for setting the new columns
+ *    - values: array of data that will be passed in to database
+*/
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
