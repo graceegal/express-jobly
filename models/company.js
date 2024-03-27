@@ -89,28 +89,26 @@ class Company {
 
   static _generateFilterSQL({ nameLike, minEmployees, maxEmployees }) {
     const values = [];
-    let whereSQL = "";
+    const whereStatements = [];
 
     if (nameLike) {
-      whereSQL += `name ILIKE $${values.length + 1}`;
+      whereStatements.push(`name ILIKE $${values.length + 1}`);
       values.push(`%${nameLike}%`);
     }
 
     if (minEmployees) {
-      if (whereSQL) whereSQL += " AND ";
-      whereSQL += `num_employees >= $${values.length + 1}`;
+      whereStatements.push(`num_employees >= $${values.length + 1}`);
       values.push(minEmployees);
     }
 
     if (maxEmployees) {
-      if (whereSQL) whereSQL += " AND ";
-      whereSQL += `num_employees <= $${values.length + 1}`;
+      whereStatements.push(`num_employees <= $${values.length + 1}`);
       values.push(maxEmployees);
     }
 
-    if (whereSQL) {
-      whereSQL = "WHERE " + whereSQL;
-    }
+    let whereSQL = whereStatements.length === 0
+      ? ""
+      : "WHERE " + whereStatements.join(" AND ");
 
     return {
       whereSQL, values

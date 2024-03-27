@@ -140,7 +140,7 @@ describe("findAll", function () {
   });
 
   test("works: filter by nameLike, minEmployees, maxEmployees", async function () {
-    let companies =
+    const companies =
       await Company.findAll({ nameLike: "C", minEmployees: 2, maxEmployees: 2 });
     expect(companies).toEqual([
       {
@@ -154,18 +154,53 @@ describe("findAll", function () {
   });
 
   test("works: filter with no results", async function () {
-    let companies =
+    const companies =
       await Company.findAll({ nameLike: "1", minEmployees: 2, maxEmployees: 2 });
     expect(companies).toEqual([]);
   });
 
 });
 
+/************************************** _generateFilterSQL */
+
+describe("_generateFilterSQL tests", function () {
+  test("works: has all valid inputs", async function () {
+    const result = Company._generateFilterSQL({
+      nameLike: "1",
+      minEmployees: 1,
+      maxEmployees: 3
+    });
+    expect(result).toEqual({
+      whereSQL: "WHERE name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3",
+      values: ['%1%', 1, 3]
+    });
+  });
+
+  test("works: has some valid inputs", async function () {
+    const result = Company._generateFilterSQL({
+      nameLike: "1",
+      minEmployees: 1
+    });
+    expect(result).toEqual({
+      whereSQL: "WHERE name ILIKE $1 AND num_employees >= $2",
+      values: ['%1%', 1]
+    });
+  });
+
+  test("works: has no inputs", async function () {
+    const result = Company._generateFilterSQL({});
+    expect(result).toEqual({
+      whereSQL: "",
+      values: []
+    });
+  });
+});
+
 /************************************** get */
 
 describe("get", function () {
   test("works", async function () {
-    let company = await Company.get("c1");
+    const company = await Company.get("c1");
     expect(company).toEqual({
       handle: "c1",
       name: "C1",

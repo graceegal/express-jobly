@@ -11,6 +11,7 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const companySearchSchema = require("../schemas/companySearch.json");
 
 const router = new express.Router();
 
@@ -54,18 +55,23 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
-  // TODO: use jsonschema for validation
-  const allowedFilters = ["nameLike", "minEmployees", "maxEmployees"];
-  const keys = Object.keys(req.query);
-  const isValidFilter = keys.every(key => allowedFilters.includes(key));
+  const result = jsonschema.validate(
+    req.query, companySearchSchema, { required: true });
 
-  if (!isValidFilter) throw new BadRequestError("Cannot filter by given criteria");
+  if (!result.valid) {
+    const errs = result.errors.map(err => err.stack);
+    throw new BadRequestError(errs);
+  }
 
   let { nameLike, minEmployees, maxEmployees } = req.query;
 
   if (minEmployees && maxEmployees) {
     minEmployees = Number(minEmployees);
     maxEmployees = Number(maxEmployees);
+
+    if(isNaN(minEmployees) || isNaN(maxEmployees)) {
+      throw new BadRequestError("min/max employees must be a number");
+    }
 
     if (minEmployees > maxEmployees) {
       throw new BadRequestError(

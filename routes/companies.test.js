@@ -154,7 +154,9 @@ describe("GET /companies", function () {
     expect(resp.statusCode).toEqual(400);
     expect(resp.body).toEqual({
       error: {
-        message: "Cannot filter by given criteria",
+        message: [
+          "instance is not allowed to have the additional property \"invalidFilter\""
+        ],
         status: 400
       }
     });
@@ -171,6 +173,22 @@ describe("GET /companies", function () {
     expect(resp.body).toEqual({
       error: {
         message: "Cannot set minEmployees to greater than maxEmployees",
+        status: 400
+      }
+    });
+  });
+
+  test("not ok - minEmployees/maxEmployees is not a number", async function () {
+    const params = new URLSearchParams({
+      nameLike: "1",
+      minEmployees: "min",
+      maxEmployees: "max"
+    });
+    const resp = await request(app).get(`/companies?${params}`);
+    expect(resp.statusCode).toEqual(400);
+    expect(resp.body).toEqual({
+      error: {
+        message: "min/max employees must be a number",
         status: 400
       }
     });
