@@ -62,8 +62,32 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  // TODO: can take out WHERE logic into another helper function maybe called _generateFilterSQL
   static async findAll({ nameLike, minEmployees, maxEmployees }) {
+    const { whereSQL, values } =
+      Company._generateFilterSQL({ nameLike, minEmployees, maxEmployees });
+
+    const querySQL = `
+      SELECT handle,
+           name,
+           description,
+           num_employees AS "numEmployees",
+           logo_url      AS "logoUrl"
+      FROM companies
+      ${whereSQL}
+      ORDER BY name`;
+
+    const companiesRes = await db.query(querySQL, values);
+    return companiesRes.rows;
+  }
+
+  /**Private static method only meant to be used within the Company class
+   *
+   * Applies conditional logic to dynamically generate a SQL WHERE clause and an
+   * array that used for sanitization of the inputs.
+   * Returns { whereSQL, values }
+  */
+
+  static _generateFilterSQL({ nameLike, minEmployees, maxEmployees }) {
     const values = [];
     let whereSQL = "";
 
@@ -88,18 +112,9 @@ class Company {
       whereSQL = "WHERE " + whereSQL;
     }
 
-    const querySQL = `
-      SELECT handle,
-           name,
-           description,
-           num_employees AS "numEmployees",
-           logo_url      AS "logoUrl"
-      FROM companies
-      ${whereSQL}
-      ORDER BY name`;
-
-    const companiesRes = await db.query(querySQL, values);
-    return companiesRes.rows;
+    return {
+      whereSQL, values
+    };
   }
 
   /** Given a company handle, return data about company.

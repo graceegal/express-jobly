@@ -139,7 +139,7 @@ describe("findAll", function () {
     ]);
   });
 
-  test("works: filter by numLike, minEmployees, maxEmployees", async function () {
+  test("works: filter by nameLike, minEmployees, maxEmployees", async function () {
     let companies =
       await Company.findAll({ nameLike: "C", minEmployees: 2, maxEmployees: 2 });
     expect(companies).toEqual([
