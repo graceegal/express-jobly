@@ -138,7 +138,7 @@ class Job {
    *
    * Throws NotFoundError if not found.
    */
-
+ 
   static async update(id, data) {
     const { setCols, values } = sqlForPartialUpdate(
       data,
