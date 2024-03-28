@@ -71,7 +71,8 @@ describe("ensureLoggedIn", function () {
   });
 });
 
-
+// TODO: add preventative test to check if isAdmin is truthy but not explicitly
+//        true.. still throws unauth error
 describe("ensureAdmin", function () {
   test("works if admin", function () {
     const req = {};
@@ -94,7 +95,7 @@ describe("ensureAdmin", function () {
   });
 });
 
-
+// TODO: can add another preventative test for truthy isAdmin value
 describe("ensureCorrectUser", function () {
   test("works if correct user", function () {
     const req = { params: { username: "test" } };

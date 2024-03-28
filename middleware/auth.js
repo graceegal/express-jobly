@@ -50,6 +50,7 @@ function ensureAdmin(req, res, next) {
 
   const isAdmin = currUser?.isAdmin === true;
 
+  // FIXME: can change to !isAdmin on below line
   if (!currUser || isAdmin !== true) {
     throw new UnauthorizedError();
   }
@@ -61,6 +62,7 @@ function ensureAdmin(req, res, next) {
  * If not, raises Unauthorized.
 */
 
+// TODO: change function name - ensureCorrectUserOrAdmin
 function ensureCorrectUser(req, res, next) {
   const currUser = res.locals.user;
   const hasAuthorizedUsername = currUser?.username === req.params.username;
@@ -69,7 +71,6 @@ function ensureCorrectUser(req, res, next) {
   if (!currUser || (!hasAuthorizedUsername && !isAdmin)) {
     throw new UnauthorizedError();
   }
-
   return next();
 }
 

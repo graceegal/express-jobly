@@ -217,6 +217,7 @@ describe("GET /users", function () {
 
 /************************************** GET /users/:username */
 
+//TODO: Break out tests for correct user VS. admin
 describe("GET /users/:username", function () {
   test("works for correct user and admin", async function () {
     const resp = await request(app)

@@ -21,6 +21,7 @@ afterAll(commonAfterAll);
 
 /************************************** POST /companies */
 
+//TODO: add explicit tests for EVERY situation
 describe("POST /companies", function () {
   const newCompany = {
     handle: "new",
