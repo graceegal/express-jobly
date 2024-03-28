@@ -16,7 +16,15 @@ class Job {
    * */
 
   static async create({ title, salary, equity, companyHandle }) {
-    const result = await db.query(`
+    const companyResult = await db.query(`
+      SELECT handle
+        FROM companies
+        WHERE handle = $1`, [companyHandle]);
+
+    if (!companyResult.rows[0])
+      throw new BadRequestError(`${companyHandle} is invalid`);
+
+    const jobResult = await db.query(`
                 INSERT INTO jobs (title,
                                        salary,
                                        equity,
@@ -34,7 +42,7 @@ class Job {
       companyHandle,
     ],
     );
-    const job = result.rows[0];
+    const job = jobResult.rows[0];
 
     return job;
   }
@@ -132,13 +140,13 @@ class Job {
    * This is a "partial update" --- it's fine if data doesn't contain all the
    * fields; this only changes provided ones.
    *
-   * Data can include: {title, salary, equity}
+   * Data can include: { title, salary, equity }
    *
-   * Returns {id, title, salary, equity, companyHandle}
+   * Returns { id, title, salary, equity, companyHandle }
    *
    * Throws NotFoundError if not found.
    */
- 
+
   static async update(id, data) {
     const { setCols, values } = sqlForPartialUpdate(
       data,

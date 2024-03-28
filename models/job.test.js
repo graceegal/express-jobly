@@ -27,6 +27,13 @@ describe("create", function () {
     companyHandle: "c1",
   };
 
+  const nonexistentCompanyJob = {
+    title: "New Job",
+    salary: 100000,
+    equity: 0.5,
+    companyHandle: "does-not-exist",
+  };
+
   test("works", async function () {
     const job = await Job.create(newJob);
     expect(job).toEqual({
@@ -50,6 +57,15 @@ describe("create", function () {
         companyHandle: "c1",
       },
     ]);
+  });
+
+  test("bad request if company does not exist", async function () {
+    try {
+      await Job.create(nonexistentCompanyJob);
+      throw new Error("fail test, you shouldn't get here");
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
   });
 });
 
