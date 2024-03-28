@@ -64,7 +64,7 @@ describe("create", function () {
       await Job.create(nonexistentCompanyJob);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
-      expect(err instanceof BadRequestError).toBeTruthy();
+      expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
 });
@@ -319,7 +319,7 @@ describe("update", function () {
     }]);
   });
 
-  test("not found if no such Job", async function () {
+  test("not found if no such job", async function () {
     try {
       await Job.update(0, updateData);
       throw new Error("fail test, you shouldn't get here");
@@ -330,7 +330,7 @@ describe("update", function () {
 
   test("bad request with no data", async function () {
     try {
-      await Job.update("c1", {});
+      await Job.update(jobIds[0], {});
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();
@@ -348,7 +348,7 @@ describe("remove", function () {
     expect(res.rows[0]).toEqual(undefined);
   });
 
-  test("not found if no such Job", async function () {
+  test("not found if no such job", async function () {
     try {
       await Job.remove(0);
       throw new Error("fail test, you shouldn't get here");

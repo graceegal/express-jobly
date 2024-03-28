@@ -21,8 +21,9 @@ class Job {
         FROM companies
         WHERE handle = $1`, [companyHandle]);
 
-    if (!companyResult.rows[0])
-      throw new BadRequestError(`${companyHandle} is invalid`);
+    if (!companyResult.rows[0]) {
+      throw new NotFoundError(`${companyHandle} does not exist`);
+    }
 
     const jobResult = await db.query(`
                 INSERT INTO jobs (title,
@@ -61,7 +62,7 @@ class Job {
 
   static async findAll({ title, minSalary, hasEquity }) {
     const { whereSQL, values } =
-      Job._generateFilterSQL({ title, minSalary, hasEquity });
+      this._generateFilterSQL({ title, minSalary, hasEquity });
 
     const querySQL = `
       SELECT id,

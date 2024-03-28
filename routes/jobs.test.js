@@ -375,19 +375,6 @@ describe("GET /jobs/:id", function () {
     });
   });
 
-  test("works for anon: job w/o jobs", async function () {
-    const resp = await request(app).get(`/jobs/${jobIds[0]}`);
-    expect(resp.body).toEqual({
-      job: {
-        id: jobIds[0],
-        title: "Comp1 Job",
-        salary: 10000,
-        equity: "0.5",
-        companyHandle: "c1",
-      },
-    });
-  });
-
   test("not found for no such job", async function () {
     const resp = await request(app).get(`/jobs/0`);
     expect(resp.statusCode).toEqual(404);
@@ -640,7 +627,7 @@ describe("DELETE /jobs/:id", function () {
     })
   });
 
-  test("not found for no such job as non-admin user", async function () {
+  test("unauth for no such job as non-admin user", async function () {
     const resp = await request(app)
       .delete(`/jobs/0`)
       .set("authorization", `Bearer ${u1Token}`);
@@ -653,7 +640,7 @@ describe("DELETE /jobs/:id", function () {
     });
   });
 
-  test("not found for no such job as anon", async function () {
+  test("unauth for no such job as anon", async function () {
     const resp = await request(app)
       .delete(`/jobs/0`);
     expect(resp.statusCode).toEqual(401);

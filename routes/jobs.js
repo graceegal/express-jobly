@@ -54,6 +54,13 @@ router.post("/", ensureAdmin, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
+  // could take req.query and make a copy, change the values,
+  // and feed in the copy to the jsonschema
+  // const request = req.query; this makes a copy of the object
+  // can validate each key/value pair
+  // would need to change schema to look for the right data types
+  // pass in request object instead of req.query in jsonschema.validate()
+
   const result = jsonschema.validate(
     req.query, jobSearchSchema, { required: true });
 
@@ -112,6 +119,7 @@ router.patch("/:id", ensureAdmin, async function (req, res, next) {
     jobUpdateSchema,
     { required: true }
   );
+
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
     throw new BadRequestError(errs);

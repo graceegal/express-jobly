@@ -143,7 +143,6 @@ class Company {
                j.salary,
                j.equity
         FROM jobs as j
-        JOIN companies as c ON c.handle = j.company_handle
         WHERE j.company_handle = $1`, [handle]);
 
     const jobs = jobRes.rows;
