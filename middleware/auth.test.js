@@ -6,7 +6,7 @@ const {
   authenticateJWT,
   ensureLoggedIn,
   ensureAdmin,
-  ensureCorrectUser
+  ensureCorrectUserOrAdmin
 } = require("./auth");
 
 
@@ -71,8 +71,7 @@ describe("ensureLoggedIn", function () {
   });
 });
 
-// TODO: add preventative test to check if isAdmin is truthy but not explicitly
-//        true.. still throws unauth error
+
 describe("ensureAdmin", function () {
   test("works if admin", function () {
     const req = {};
@@ -89,37 +88,37 @@ describe("ensureAdmin", function () {
 
   test("unauth if logged in but not admin", function () {
     const req = {};
-    const res = { locals: { user: { username: "test", isAdmin: false } } };
+    const res = { locals: { user: { username: "test", isAdmin: "true" } } };
     expect(() => ensureAdmin(req, res, next))
       .toThrow(UnauthorizedError);
   });
 });
 
-// TODO: can add another preventative test for truthy isAdmin value
-describe("ensureCorrectUser", function () {
+
+describe("ensureCorrectUserOrAdmin", function () {
   test("works if correct user", function () {
     const req = { params: { username: "test" } };
     const res = { locals: { user: { username: "test", isAdmin: false } } };
-    ensureCorrectUser(req, res, next);
+    ensureCorrectUserOrAdmin(req, res, next);
   });
 
   test("works if admin", function () {
     const req = { params: { username: "test" } };
     const res = { locals: { user: { username: "admin", isAdmin: true } } };
-    ensureCorrectUser(req, res, next);
+    ensureCorrectUserOrAdmin(req, res, next);
   });
 
   test("unauth if not logged in", function () {
     const req = { params: { username: "test" } };
     const res = { locals: {} };
-    expect(() => ensureCorrectUser(req, res, next))
+    expect(() => ensureCorrectUserOrAdmin(req, res, next))
       .toThrow(UnauthorizedError);
   });
 
   test("unauth if logged in but not correct user and not admin", function () {
     const req = { params: { username: "test" } };
-    const res = { locals: { user: { username: "incorrect", isAdmin: false } } };
-    expect(() => ensureCorrectUser(req, res, next))
+    const res = { locals: { user: { username: "incorrect", isAdmin: "true" } } };
+    expect(() => ensureCorrectUserOrAdmin(req, res, next))
       .toThrow(UnauthorizedError);
   });
 });

@@ -50,8 +50,7 @@ function ensureAdmin(req, res, next) {
 
   const isAdmin = currUser?.isAdmin === true;
 
-  // FIXME: can change to !isAdmin on below line
-  if (!currUser || isAdmin !== true) {
+  if (!currUser || !isAdmin) {
     throw new UnauthorizedError();
   }
   return next();
@@ -62,8 +61,7 @@ function ensureAdmin(req, res, next) {
  * If not, raises Unauthorized.
 */
 
-// TODO: change function name - ensureCorrectUserOrAdmin
-function ensureCorrectUser(req, res, next) {
+function ensureCorrectUserOrAdmin(req, res, next) {
   const currUser = res.locals.user;
   const hasAuthorizedUsername = currUser?.username === req.params.username;
   const isAdmin = currUser?.isAdmin === true;
@@ -79,6 +77,6 @@ module.exports = {
   authenticateJWT,
   ensureLoggedIn,
   ensureAdmin,
-  ensureCorrectUser,
+  ensureCorrectUserOrAdmin,
 };
 

@@ -21,7 +21,6 @@ afterAll(commonAfterAll);
 
 /************************************** POST /companies */
 
-//TODO: add explicit tests for EVERY situation
 describe("POST /companies", function () {
   const newCompany = {
     handle: "new",
@@ -56,7 +55,20 @@ describe("POST /companies", function () {
     });
   });
 
-  test("bad request with missing data", async function () {
+  test("unauthorized for anon", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany);
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401
+      }
+    });
+  });
+
+  test("bad request with missing data as admin", async function () {
     const resp = await request(app)
       .post("/companies")
       .send({
@@ -67,7 +79,40 @@ describe("POST /companies", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  test("bad request with invalid data", async function () {
+  test("bad request with missing data as user", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send({
+        handle: "new",
+        numEmployees: 10,
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401
+      }
+    });
+  });
+
+  test("bad request with missing data as anon", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send({
+        handle: "new",
+        numEmployees: 10,
+      });
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401
+      }
+    });
+  });
+
+  test("bad request with invalid data as admin", async function () {
     const resp = await request(app)
       .post("/companies")
       .send({
@@ -76,6 +121,39 @@ describe("POST /companies", function () {
       })
       .set("authorization", `Bearer ${u4AdminToken}`);
     expect(resp.statusCode).toEqual(400);
+  });
+
+  test("bad request with invalid data as non-admin user", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send({
+        ...newCompany,
+        logoUrl: "not-a-url",
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401
+      }
+    });
+  });
+
+  test("bad request with invalid data as anon", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send({
+        ...newCompany,
+        logoUrl: "not-a-url",
+      });
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401
+      }
+    });
   });
 });
 
@@ -274,13 +352,13 @@ describe("PATCH /companies/:handle", function () {
         name: "C1-new",
       })
       .set("authorization", `Bearer ${u1Token}`);
-      expect(resp.statusCode).toEqual(401);
-      expect(resp.body).toEqual({
-        error: {
-          message: "Unauthorized",
-          status: 401
-        }
-      });
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401
+      }
+    });
   });
 
   test("unauth for anon", async function () {
@@ -292,7 +370,7 @@ describe("PATCH /companies/:handle", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("not found on no such company", async function () {
+  test("not found on no such company as admin", async function () {
     const resp = await request(app)
       .patch(`/companies/nope`)
       .send({
@@ -302,7 +380,26 @@ describe("PATCH /companies/:handle", function () {
     expect(resp.statusCode).toEqual(404);
   });
 
-  test("bad request on handle change attempt", async function () {
+  test("not found on no such company as non-admin user", async function () {
+    const resp = await request(app)
+      .patch(`/companies/nope`)
+      .send({
+        name: "new nope",
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("not found on no such company as anon", async function () {
+    const resp = await request(app)
+      .patch(`/companies/nope`)
+      .send({
+        name: "new nope",
+      });
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("bad request on handle change attempt as admin", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({
@@ -312,7 +409,26 @@ describe("PATCH /companies/:handle", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  test("bad request on invalid data", async function () {
+  test("bad request on handle change attempt as non-admin user", async function () {
+    const resp = await request(app)
+      .patch(`/companies/c1`)
+      .send({
+        handle: "c1-new",
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("bad request on handle change attempt as anon", async function () {
+    const resp = await request(app)
+      .patch(`/companies/c1`)
+      .send({
+        handle: "c1-new",
+      });
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("bad request on invalid data as admin", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({
@@ -320,6 +436,25 @@ describe("PATCH /companies/:handle", function () {
       })
       .set("authorization", `Bearer ${u4AdminToken}`);
     expect(resp.statusCode).toEqual(400);
+  });
+
+  test("bad request on invalid data as non-admin user", async function () {
+    const resp = await request(app)
+      .patch(`/companies/c1`)
+      .send({
+        logoUrl: "not-a-url",
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("bad request on invalid data as anon", async function () {
+    const resp = await request(app)
+      .patch(`/companies/c1`)
+      .send({
+        logoUrl: "not-a-url",
+      });
+    expect(resp.statusCode).toEqual(401);
   });
 });
 
@@ -337,13 +472,13 @@ describe("DELETE /companies/:handle", function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${u1Token}`);
-      expect(resp.statusCode).toEqual(401);
-      expect(resp.body).toEqual({
-        error: {
-          message: "Unauthorized",
-          status: 401
-        }
-      });
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      error: {
+        message: "Unauthorized",
+        status: 401
+      }
+    });
   });
 
   test("unauth for anon", async function () {
@@ -352,10 +487,23 @@ describe("DELETE /companies/:handle", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("not found for no such company", async function () {
+  test("not found for no such company as admin", async function () {
     const resp = await request(app)
       .delete(`/companies/nope`)
       .set("authorization", `Bearer ${u4AdminToken}`);
     expect(resp.statusCode).toEqual(404);
+  });
+
+  test("not found for no such company as non-admin user", async function () {
+    const resp = await request(app)
+      .delete(`/companies/nope`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("not found for no such company as anon", async function () {
+    const resp = await request(app)
+      .delete(`/companies/nope`);
+    expect(resp.statusCode).toEqual(401);
   });
 });
