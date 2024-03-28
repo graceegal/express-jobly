@@ -236,7 +236,7 @@ describe("get", function () {
 
   test("not found if no such job", async function () {
     try {
-      await Job.get(-5);
+      await Job.get(0);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
@@ -305,7 +305,7 @@ describe("update", function () {
 
   test("not found if no such Job", async function () {
     try {
-      await Job.update(-10, updateData);
+      await Job.update(0, updateData);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
@@ -334,7 +334,7 @@ describe("remove", function () {
 
   test("not found if no such Job", async function () {
     try {
-      await Job.remove(-1000);
+      await Job.remove(0);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
