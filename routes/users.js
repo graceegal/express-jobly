@@ -59,13 +59,18 @@ router.get("/", ensureAdmin, async function (req, res, next) {
 
 /** GET /[username] => { user }
  *
- * Returns { username, firstName, lastName, email, isAdmin }
+ * Returns { username, firstName, lastName, email, isAdmin, jobs }
+ *  where jobs is [id, ...]
  *
  * Authorization required: current user login OR admin login
  **/
 
 router.get("/:username", ensureCorrectUserOrAdmin, async function (req, res, next) {
   const user = await User.get(req.params.username);
+
+  // ask why forEach doesn't work here?
+  user.jobs = user.jobs.map(j => j.id);
+
   return res.json({ user });
 });
 
@@ -108,7 +113,7 @@ router.delete("/:username", ensureCorrectUserOrAdmin, async function (req, res, 
 
 
 
-/** POST /[username]/jobs/[id] => { applied: jobId}
+/** POST /[username]/jobs/[id] => { applied: jobId }
  *
  * Authorization required: current user login OR admin login
 */

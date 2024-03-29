@@ -104,6 +104,9 @@ async function commonBeforeAll() {
   );
 
   jobs.forEach(j => jobIds.push(j.id));
+
+  await User.applyToJob("u1", jobIds[0]);
+  await User.applyToJob("u1", jobIds[1]);
 }
 
 async function commonBeforeEach() {

@@ -119,8 +119,8 @@ class User {
 
   /** Given a username, return data about user.
    *
-   * Returns { username, first_name, last_name, email, is_admin, jobs }
-   *   where jobs is { id, title, company_handle, company_name, state }
+   * Returns { username, firstName, lastName, email, isAdmin, jobs }
+   *   where jobs is [{ id, title, companyHandle, companyName }, ...]
    *
    * Throws NotFoundError if user not found.
    **/
@@ -139,6 +139,21 @@ class User {
     const user = userRes.rows[0];
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
+
+    const jobRes = await db.query(`
+        SELECT j.id,
+               j.title,
+               j.company_handle AS "companyHandle",
+               c.name AS "companyName"
+        FROM jobs AS j
+        JOIN companies AS c ON j.company_handle = c.handle
+        JOIN applications AS a ON a.job_id = j.id
+        WHERE a.username = $1
+        ORDER BY j.id`, [username]);
+
+    const jobs = jobRes.rows;
+
+    user.jobs = jobs;
 
     return user;
   }

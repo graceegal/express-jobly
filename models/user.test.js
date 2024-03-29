@@ -134,6 +134,8 @@ describe("findAll", function () {
 
 describe("get", function () {
   test("works", async function () {
+    await User.applyToJob("u1", jobIds[0]);
+    await User.applyToJob("u1", jobIds[1]);
     let user = await User.get("u1");
     expect(user).toEqual({
       username: "u1",
@@ -141,10 +143,24 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs: [
+        {
+          id: jobIds[0],
+          title: "Comp1 Job",
+          companyHandle: "c1",
+          companyName: "C1"
+        },
+        {
+          id: jobIds[1],
+          title: "Comp2 Job",
+          companyHandle: "c2",
+          companyName: "C2"
+        }]
     });
   });
 
   test("not found if no such user", async function () {
+    await User.applyToJob("u1", jobIds[0]);
     try {
       await User.get("nope");
       throw new Error("fail test, you shouldn't get here");
