@@ -56,7 +56,7 @@ class User {
    **/
 
   static async register(
-      { username, password, firstName, lastName, email, isAdmin }) {
+    { username, password, firstName, lastName, email, isAdmin }) {
     const duplicateCheck = await db.query(`
         SELECT username
         FROM users
@@ -84,13 +84,13 @@ class User {
                     last_name AS "lastName",
                     email,
                     is_admin AS "isAdmin"`, [
-          username,
-          hashedPassword,
-          firstName,
-          lastName,
-          email,
-          isAdmin,
-        ],
+      username,
+      hashedPassword,
+      firstName,
+      lastName,
+      email,
+      isAdmin,
+    ],
     );
 
     const user = result.rows[0];
@@ -166,12 +166,12 @@ class User {
     }
 
     const { setCols, values } = sqlForPartialUpdate(
-        data,
-        {
-          firstName: "first_name",
-          lastName: "last_name",
-          isAdmin: "is_admin",
-        });
+      data,
+      {
+        firstName: "first_name",
+        lastName: "last_name",
+        isAdmin: "is_admin",
+      });
     const usernameVarIdx = "$" + (values.length + 1);
 
     const querySql = `
@@ -204,6 +204,27 @@ class User {
     const user = result.rows[0];
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
+  }
+
+  /** Apply to a job;
+   *
+   * Validates username and job Id- If both exist:
+   *    Inserts record into applications table of username and
+   *    job ID they applied to   */
+
+  static async applyToJob(username, jobId) {
+    await this.get(username);
+
+    const jobRes = await db.query(`
+        SELECT id
+        FROM jobs
+        WHERE id = $1`, [jobId]);
+    if (!jobRes.rows[0]) throw new NotFoundError(`No job with id: ${jobId}`);
+
+    await db.query(
+      `INSERT INTO applications (username, job_id)
+      VALUES ($1, $2)`, [username, jobId]
+    );
   }
 }
 

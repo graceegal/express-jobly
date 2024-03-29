@@ -29,9 +29,9 @@ const router = express.Router();
 
 router.post("/", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(
-      req.body,
-      userNewSchema,
-      { required: true },
+    req.body,
+    userNewSchema,
+    { required: true },
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
@@ -82,9 +82,9 @@ router.get("/:username", ensureCorrectUserOrAdmin, async function (req, res, nex
 
 router.patch("/:username", ensureCorrectUserOrAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(
-      req.body,
-      userUpdateSchema,
-      { required: true },
+    req.body,
+    userUpdateSchema,
+    { required: true },
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
@@ -104,6 +104,22 @@ router.patch("/:username", ensureCorrectUserOrAdmin, async function (req, res, n
 router.delete("/:username", ensureCorrectUserOrAdmin, async function (req, res, next) {
   await User.remove(req.params.username);
   return res.json({ deleted: req.params.username });
+});
+
+
+
+/** POST /[username]/jobs/[id] => { applied: jobId}
+ *
+ * Authorization required: current user login OR admin login
+*/
+
+router.post("/:username/jobs/:id", ensureCorrectUserOrAdmin, async function (req, res, next) {
+  const jobId = Number(req.params.id);
+  if (isNaN(jobId)) throw new BadRequestError("Job ID must be a number");
+
+  await User.applyToJob(req.params.username, jobId);
+
+  return res.json({ applied: jobId });
 });
 
 
